@@ -61,38 +61,63 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shrey.currencyx.domain.model.ChartPeriod
 import com.shrey.currencyx.domain.model.ChartPoint
 import com.shrey.currencyx.domain.model.Currency
+import com.shrey.currencyx.ui.SharedPairViewModel
 import com.shrey.currencyx.ui.components.CurrencyPicker
-
-private val SlateBackground = Color(0xFF0F172A)
-private val SlateCard = Color(0xFF1E293B)
-private val SlateCardTransparent = Color(0x991E293B)
-private val SlateBorder = Color(0xFF334155)
-private val SlateText = Color(0xFF94A3B8)
-private val SlateTextMuted = Color(0xFF64748B)
-private val EmeraldPrimary = Color(0xFF10B981)
-private val EmeraldDark = Color(0xFF059669)
-private val EmeraldGlow = Color(0x3310B981)
-private val RedNegative = Color(0xFFEF4444)
-private val RedGlow = Color(0x33EF4444)
-private val OrangeAccent = Color(0xFFF97316)
+import com.shrey.currencyx.ui.theme.CurrencyXColors
+import com.shrey.currencyx.ui.theme.CurrencyXDimens
+import com.shrey.currencyx.ui.theme.CurrencyXGradients
 
 @Composable
 fun ChartsScreen(
     viewModel: ChartsViewModel = hiltViewModel(),
     onNavigateToConvert: () -> Unit = {}
 ) {
+    val sharedPairViewModel: SharedPairViewModel = hiltViewModel()
+    val sharedPair by sharedPairViewModel.pair.collectAsStateWithLifecycle()
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle(initialValue = ChartUiState())
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(sharedPair.from.code, sharedPair.to.code) {
+        val desiredFrom = if (Currency.isFrankfurterSupported(sharedPair.from.code)) {
+            sharedPair.from.code
+        } else {
+            "USD"
+        }
+        val desiredTo = if (Currency.isFrankfurterSupported(sharedPair.to.code)) {
+            sharedPair.to.code
+        } else {
+            "INR"
+        }
+
+        if (desiredFrom != uiState.fromCurrency || desiredTo != uiState.toCurrency) {
+            viewModel.selectFromCurrency(desiredFrom)
+            viewModel.selectToCurrency(desiredTo)
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SlateBackground)
+            .background(CurrencyXColors.Background)
             .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = CurrencyXDimens.PaddingScreen)
             .padding(top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val converterFromSupported = Currency.isFrankfurterSupported(sharedPair.from.code)
+        val converterToSupported = Currency.isFrankfurterSupported(sharedPair.to.code)
+
+        if (!converterFromSupported || !converterToSupported) {
+            Text(
+                text = "Charts use ECB data and only support a subset of currencies. " +
+                    "The current converter pair ${sharedPair.from.code}/${sharedPair.to.code} " +
+                    "cannot be charted; showing the closest supported pair instead.",
+                color = CurrencyXColors.TextSecondary,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
         CurrencyPairSelector(
             fromCurrency = uiState.fromCurrency,
             toCurrency = uiState.toCurrency,
@@ -125,15 +150,15 @@ fun ChartsScreen(
                 icon = "💱",
                 label = "Current Rate",
                 value = formatRate(uiState.currentRate),
-                accentColor = EmeraldPrimary
+                accentColor = CurrencyXColors.ChartPositive
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = if (uiState.isPositive) "📈" else "📉",
                 label = "Change",
                 value = "${if (uiState.isPositive) "+" else ""}${String.format("%.2f", uiState.changePercent)}%",
-                accentColor = if (uiState.isPositive) EmeraldPrimary else RedNegative,
-                valueColor = if (uiState.isPositive) EmeraldPrimary else RedNegative
+                accentColor = if (uiState.isPositive) CurrencyXColors.ChartPositive else CurrencyXColors.ChartNegative,
+                valueColor = if (uiState.isPositive) CurrencyXColors.ChartPositive else CurrencyXColors.ChartNegative
             )
         }
 
@@ -146,14 +171,14 @@ fun ChartsScreen(
                 icon = "📈",
                 label = "High",
                 value = formatRate(uiState.highRate),
-                accentColor = EmeraldPrimary
+                accentColor = CurrencyXColors.ChartPositive
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = "📉",
                 label = "Low",
                 value = formatRate(uiState.lowRate),
-                accentColor = OrangeAccent
+                accentColor = CurrencyXColors.Warning
             )
         }
 
@@ -197,8 +222,8 @@ private fun CurrencyPairSelector(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = SlateCardTransparent)
+        shape = RoundedCornerShape(CurrencyXDimens.RadiusXl),
+        colors = CardDefaults.cardColors(containerColor = CurrencyXColors.Surface)
     ) {
         Row(
             modifier = Modifier
@@ -253,13 +278,13 @@ private fun CurrencyChip(
         ) {
             Text(
                 text = code,
-                color = Color.White,
+                color = CurrencyXColors.TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
             Text(
                 text = name,
-                color = SlateText,
+                color = CurrencyXColors.TextSecondary,
                 fontSize = 11.sp
             )
         }
@@ -282,10 +307,10 @@ private fun SwapButton(onClick: () -> Unit) {
 
     Box(
         modifier = Modifier
-            .size(48.dp)
+            .size(CurrencyXDimens.FlagContainerSize)
             .scale(scale)
             .clip(CircleShape)
-            .background(EmeraldGlow)
+            .background(CurrencyXColors.TealGlow)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -298,7 +323,7 @@ private fun SwapButton(onClick: () -> Unit) {
         Icon(
             imageVector = Icons.Rounded.SwapHoriz,
             contentDescription = "Swap",
-            tint = EmeraldPrimary,
+            tint = CurrencyXColors.Primary,
             modifier = Modifier.size(24.dp)
         )
     }
@@ -323,19 +348,19 @@ private fun PeriodSelector(
         ChartPeriod.entries.forEach { period ->
             val isSelected = period == selectedPeriod
             val backgroundColor by animateColorAsState(
-                targetValue = if (isSelected) EmeraldPrimary else SlateCardTransparent,
+                targetValue = if (isSelected) CurrencyXColors.Primary else CurrencyXColors.Surface,
                 label = "bg"
             )
             val textColor by animateColorAsState(
-                targetValue = if (isSelected) Color.White else SlateText,
+                targetValue = if (isSelected) CurrencyXColors.OnPrimary else CurrencyXColors.TextSecondary,
                 label = "text"
             )
 
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .height(CurrencyXDimens.ButtonHeightSmall)
+                    .clip(RoundedCornerShape(CurrencyXDimens.RadiusMd))
                     .background(backgroundColor)
                     .clickable { onPeriodSelected(period) },
                 contentAlignment = Alignment.Center
@@ -363,8 +388,8 @@ private fun ChartCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = SlateCardTransparent)
+        shape = RoundedCornerShape(CurrencyXDimens.RadiusXl),
+        colors = CardDefaults.cardColors(containerColor = CurrencyXColors.Surface)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -375,26 +400,26 @@ private fun ChartCard(
                 Column {
                     Text(
                         text = "1 $fromCurrency equals",
-                        color = SlateText,
+                        color = CurrencyXColors.TextMuted,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = formatRate(currentRate),
-                        color = Color.White,
+                        color = CurrencyXColors.TextPrimary,
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = Currency.getByCode(toCurrency)?.name ?: toCurrency,
-                        color = SlateText,
+                        color = CurrencyXColors.TextSecondary,
                         fontSize = 14.sp
                     )
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isPositive) EmeraldGlow else RedGlow
+                    shape = RoundedCornerShape(CurrencyXDimens.RadiusLg),
+                    color = if (isPositive) CurrencyXColors.TealGlow else CurrencyXColors.ErrorMuted
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -407,7 +432,7 @@ private fun ChartCard(
                         )
                         Text(
                             text = "${if (isPositive) "+" else ""}${String.format("%.2f", changePercent)}%",
-                            color = if (isPositive) EmeraldPrimary else RedNegative,
+                            color = if (isPositive) CurrencyXColors.ChartPositive else CurrencyXColors.ChartNegative,
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
@@ -424,7 +449,7 @@ private fun ChartCard(
                         .height(180.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = EmeraldPrimary)
+                    CircularProgressIndicator(color = CurrencyXColors.Primary)
                 }
             } else {
                 DynamicYAxisChart(
@@ -446,11 +471,11 @@ private fun DynamicYAxisChart(
     modifier: Modifier = Modifier
 ) {
     val textMeasurer = rememberTextMeasurer()
-    val lineColor = if (isPositive) EmeraldPrimary else RedNegative
+    val lineColor = if (isPositive) CurrencyXColors.ChartPositive else CurrencyXColors.ChartNegative
     val gradientColors = if (isPositive) {
-        listOf(EmeraldPrimary.copy(alpha = 0.3f), EmeraldPrimary.copy(alpha = 0.02f))
+        listOf(CurrencyXColors.ChartPositive.copy(alpha = 0.3f), CurrencyXColors.ChartPositive.copy(alpha = 0.02f))
     } else {
-        listOf(RedNegative.copy(alpha = 0.3f), RedNegative.copy(alpha = 0.02f))
+        listOf(CurrencyXColors.ChartNegative.copy(alpha = 0.3f), CurrencyXColors.ChartNegative.copy(alpha = 0.02f))
     }
 
     Canvas(modifier = modifier) {
@@ -482,7 +507,7 @@ private fun DynamicYAxisChart(
             val y = topPadding + (i.toFloat() / yAxisSteps) * chartHeight
 
             drawLine(
-                color = SlateBorder.copy(alpha = 0.4f),
+                color = CurrencyXColors.ChartGrid.copy(alpha = 0.4f),
                 start = Offset(leftPadding, y),
                 end = Offset(size.width - rightPadding, y),
                 strokeWidth = 1.dp.toPx(),
@@ -494,7 +519,7 @@ private fun DynamicYAxisChart(
                 text = labelText,
                 style = TextStyle(
                     fontSize = 10.sp,
-                    color = SlateTextMuted
+                    color = CurrencyXColors.ChartLabel
                 )
             )
             drawText(
@@ -562,7 +587,7 @@ private fun DynamicYAxisChart(
                     text = label,
                     style = TextStyle(
                         fontSize = 10.sp,
-                        color = SlateTextMuted
+                        color = CurrencyXColors.ChartLabel
                     )
                 )
                 drawText(
@@ -588,8 +613,8 @@ private fun StatCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SlateCardTransparent)
+        shape = RoundedCornerShape(CurrencyXDimens.RadiusLg),
+        colors = CardDefaults.cardColors(containerColor = CurrencyXColors.Surface)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -609,7 +634,7 @@ private fun StatCard(
             Column {
                 Text(
                     text = label,
-                    color = SlateText,
+                    color = CurrencyXColors.TextSecondary,
                     fontSize = 12.sp
                 )
                 Text(
@@ -632,18 +657,13 @@ private fun AverageCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(CurrencyXDimens.RadiusXl),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0x1A10B981)
+            containerColor = CurrencyXColors.TealMuted
         ),
         border = BorderStroke(
             1.dp,
-            Brush.linearGradient(
-                colors = listOf(
-                    EmeraldPrimary.copy(alpha = 0.3f),
-                    EmeraldPrimary.copy(alpha = 0.1f)
-                )
-            )
+            CurrencyXGradients.BorderPrimary
         )
     ) {
         Row(
@@ -661,7 +681,7 @@ private fun AverageCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(EmeraldGlow),
+                        .background(CurrencyXColors.TealGlow),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(text = "📊", fontSize = 24.sp)
@@ -670,7 +690,7 @@ private fun AverageCard(
                 Column {
                     Text(
                         text = "${period.label} Average",
-                        color = EmeraldPrimary.copy(alpha = 0.7f),
+                        color = CurrencyXColors.TextSecondary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -680,13 +700,13 @@ private fun AverageCard(
                     ) {
                         Text(
                             text = formatRate(average),
-                            color = Color.White,
+                            color = CurrencyXColors.TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp
                         )
                         Text(
                             text = toCurrency,
-                            color = EmeraldPrimary,
+                            color = CurrencyXColors.Primary,
                             fontSize = 14.sp
                         )
                     }
@@ -698,12 +718,12 @@ private fun AverageCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(EmeraldGlow)
+                    .background(CurrencyXColors.TealGlow)
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Refresh",
-                    tint = EmeraldPrimary,
+                    tint = CurrencyXColors.Primary,
                     modifier = Modifier.size(20.dp)
                 )
             }

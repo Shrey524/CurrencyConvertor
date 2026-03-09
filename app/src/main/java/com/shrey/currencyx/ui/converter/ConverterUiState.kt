@@ -20,7 +20,7 @@ data class ConverterUiState(
         get() {
             val from = exchangeRates?.rates?.get(fromCurrency.code) ?: 1.0
             val to = exchangeRates?.rates?.get(toCurrency.code) ?: 1.0
-            val amt = amount.toDoubleOrNull() ?: 0.0
+            val amt = amount.toDoubleOrNull()?.coerceAtMost(1_000_000_000.0) ?: 0.0
             return amt * (to / from)
         }
 

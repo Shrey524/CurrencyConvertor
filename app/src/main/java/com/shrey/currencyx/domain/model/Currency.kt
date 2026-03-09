@@ -59,5 +59,8 @@ data class Currency(
 
         fun getByCode(code: String): Currency? =
             allCurrencies.find { it.code == code }
+
+        fun isFrankfurterSupported(code: String): Boolean =
+            code in frankfurterSupported
     }
 }

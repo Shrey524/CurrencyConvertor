@@ -60,7 +60,15 @@ fun AmountInput(
         BasicTextField(
             value = amount,
             onValueChange = { new ->
-                if (new.isEmpty() || new.matches(Regex("^\\d*\\.?\\d*$"))) onAmountChange(new)
+                if (new.isEmpty()) {
+                    onAmountChange("")
+                } else if (new.matches(Regex("^\\d*\\.?\\d*$"))) {
+                    val numeric = new.toDoubleOrNull()
+                    if (numeric == null || numeric <= 1_000_000_000.0) {
+                        onAmountChange(new)
+                    }
+                    // If > 1,000,000,000 ignore the change
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()

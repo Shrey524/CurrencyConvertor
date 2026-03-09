@@ -27,12 +27,16 @@ import com.shrey.currencyx.ui.components.CurrencyPicker
 import com.shrey.currencyx.ui.components.LoadingShimmer
 import com.shrey.currencyx.ui.components.ResultCard
 import com.shrey.currencyx.ui.components.SwapButton
+import com.shrey.currencyx.ui.SharedPairViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ConverterScreen(
     viewModel: ConverterViewModel = hiltViewModel(),
     onRegisterRefresh: ((() -> Unit)?) -> Unit = {}
 ) {
+    val sharedPairViewModel: SharedPairViewModel = hiltViewModel()
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle(
         initialValue = ConverterUiState()
     )
@@ -41,6 +45,10 @@ fun ConverterScreen(
     DisposableEffect(Unit) {
         onRegisterRefresh(viewModel::onRefresh)
         onDispose { onRegisterRefresh(null) }
+    }
+
+    LaunchedEffect(uiState.fromCurrency.code, uiState.toCurrency.code) {
+        sharedPairViewModel.setPair(uiState.fromCurrency, uiState.toCurrency)
     }
 
     Column(
