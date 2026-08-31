@@ -19,24 +19,34 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.shrey.currencyx.ui.charts.ChartsScreen
 import com.shrey.currencyx.ui.converter.ConverterScreen
 import com.shrey.currencyx.ui.theme.Emerald500
 
+private sealed interface CurrencyRoute : NavKey {
+    data object Converter : CurrencyRoute
+    data object Charts : CurrencyRoute
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Convert", "Charts")
+    val backStack = rememberNavBackStack(CurrencyRoute.Converter)
+    val currentRoute = backStack.lastOrNull() ?: CurrencyRoute.Converter
+    val tabs = listOf(
+        "Convert" to CurrencyRoute.Converter,
+        "Charts" to CurrencyRoute.Charts
+    )
 
     Scaffold(
         topBar = {
@@ -75,11 +85,16 @@ fun MainScreen() {
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                tabs.forEachIndexed { index, title ->
-                    val isSelected = selectedTab == index
+                tabs.forEach { (title, route) ->
+                    val isSelected = currentRoute == route
 
                     Surface(
-                        onClick = { selectedTab = index },
+                        onClick = {
+                            if (!isSelected) {
+                                backStack.clear()
+                                backStack.add(route)
+                            }
+                        },
                         shape = RoundedCornerShape(12.dp),
                         color = if (isSelected) {
                             MaterialTheme.colorScheme.primary
@@ -104,10 +119,21 @@ fun MainScreen() {
                 }
             }
 
-            when (selectedTab) {
-                0 -> ConverterScreen()
-                1 -> ChartsScreen()
-            }
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator()
+                ),
+                entryProvider = entryProvider {
+                    entry<CurrencyRoute.Converter> {
+                        ConverterScreen()
+                    }
+                    entry<CurrencyRoute.Charts> {
+                        ChartsScreen()
+                    }
+                }
+            )
         }
     }
 }

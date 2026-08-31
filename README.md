@@ -1,6 +1,6 @@
 # CurrencyX
 
-A modern currency converter built with Jetpack Compose.
+A modern Android currency converter built with Jetpack Compose, Material 3, Navigation 3, Hilt, Room, Retrofit, OkHttp, Kotlin Serialization, Coroutines, and Vico charts.
 
 ## Features
 
@@ -12,11 +12,18 @@ A modern currency converter built with Jetpack Compose.
 
 ## Tech Stack
 
-- **UI**: Jetpack Compose, Material 3
+- **Build**: Android Gradle Plugin 8.9.2, Gradle 8.13, Kotlin 2.0.21
+- **UI**: Jetpack Compose, Compose BOM 2024.09.00, Material 3, Material Icons Extended, Activity Compose 1.12.4
+- **Navigation**: AndroidX Navigation 3 runtime/UI 1.1.7
 - **Architecture**: MVVM, Clean Architecture
-- **DI**: Hilt
-- **Networking**: Retrofit, Kotlin Serialization
-- **Local**: Room, Coroutines, StateFlow
+- **DI**: Hilt/Dagger 2.57.1, AndroidX Hilt Lifecycle ViewModel Compose 1.3.0
+- **Lifecycle**: Lifecycle Runtime KTX/Compose 2.10.0, Lifecycle ViewModel Compose 2.7.0, StateFlow
+- **Networking**: Retrofit 2.9.0, OkHttp 4.12.0, OkHttp Logging Interceptor 4.12.0
+- **Serialization**: Kotlinx Serialization JSON 1.6.2, Retrofit Kotlin Serialization Converter 1.0.0
+- **Local storage**: Room Runtime/KTX/Compiler 2.8.3
+- **Async**: Kotlin Coroutines Android 1.7.3
+- **Charts**: Vico Compose, Compose Material 3, and Core 1.13.1
+- **Testing**: JUnit 4.13.2, AndroidX JUnit 1.3.0, Espresso Core 3.7.0, Compose UI Test
 
 ## Setup
 
