@@ -1,12 +1,12 @@
 package com.shrey.currencyx.data.repository
 
-import android.util.Log
 import com.shrey.currencyx.data.remote.FrankfurterApiService
 import com.shrey.currencyx.domain.model.ChartData
 import com.shrey.currencyx.domain.model.ChartPoint
 import com.shrey.currencyx.domain.model.ChartPeriod
 import com.shrey.currencyx.domain.model.ChartStats
 import com.shrey.currencyx.domain.repository.ChartRepository
+import com.shrey.currencyx.util.LogUtil
 import com.shrey.currencyx.util.Resource
 import com.shrey.currencyx.util.getDateString
 import com.shrey.currencyx.util.toEpochMillis
@@ -27,8 +27,6 @@ class ChartRepositoryImpl @Inject constructor(
             val endDate = getDateString(0)
             val startDate = getDateString(period.days)
 
-            Log.d("ChartRepo", "Fetching $from -> $to from $startDate to $endDate")
-
             val response = api.getHistoricalRates(
                 startDate = startDate,
                 endDate = endDate,
@@ -36,11 +34,8 @@ class ChartRepositoryImpl @Inject constructor(
                 to = to
             )
 
-            Log.d("ChartRepo", "Response rates count: ${response.rates.size}")
-
             val points = response.rates.mapNotNull { (date, rates) ->
                 val rate = rates[to]
-                Log.d("ChartRepo", "Date: $date, Rate: $rate")
 
                 if (rate != null && rate.isFinite() && rate > 0) {
                     ChartPoint(
@@ -49,12 +44,9 @@ class ChartRepositoryImpl @Inject constructor(
                         rate = rate
                     )
                 } else {
-                    Log.w("ChartRepo", "Skipping invalid rate: $rate for date $date")
                     null
                 }
             }.sortedBy { it.timestamp }
-
-            Log.d("ChartRepo", "Valid points: ${points.size}")
 
             if (points.isEmpty()) {
                 return Resource.Error("No valid exchange rate data")
@@ -69,7 +61,7 @@ class ChartRepositoryImpl @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            Log.e("ChartRepo", "Error fetching rates", e)
+            LogUtil.e("Error fetching chart rates", e)
             Resource.Error(e.message ?: "Failed to fetch historical data")
         }
     }

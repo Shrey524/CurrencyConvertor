@@ -32,9 +32,14 @@ import androidx.navigation3.ui.NavDisplay
 import com.shrey.currencyx.ui.charts.ChartsScreen
 import com.shrey.currencyx.ui.converter.ConverterScreen
 import com.shrey.currencyx.ui.theme.Emerald500
+import kotlinx.serialization.Serializable
 
+@Serializable
 private sealed interface CurrencyRoute : NavKey {
+    @Serializable
     data object Converter : CurrencyRoute
+
+    @Serializable
     data object Charts : CurrencyRoute
 }
 

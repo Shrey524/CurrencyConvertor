@@ -10,6 +10,13 @@ A modern Android currency converter built with Jetpack Compose, Material 3, Navi
 - Material 3 dark theme (emerald)
 - Clean architecture: MVVM, domain/data layers, Hilt, Room, Retrofit
 
+## Screenshots
+
+<p>
+  <img src="docs/screenshots/converter.png" alt="CurrencyX converter screen" width="260" />
+  <img src="docs/screenshots/charts.png" alt="CurrencyX charts screen" width="260" />
+</p>
+
 ## Tech Stack
 
 - **Build**: Android Gradle Plugin 8.9.2, Gradle 8.13, Kotlin 2.0.21
