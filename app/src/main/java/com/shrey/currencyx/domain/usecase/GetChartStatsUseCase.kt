@@ -5,6 +5,7 @@ import com.shrey.currencyx.domain.model.ChartStats
 import com.shrey.currencyx.domain.repository.ChartRepository
 import javax.inject.Inject
 
+/** Calculates display statistics from chart data. */
 class GetChartStatsUseCase @Inject constructor(
     private val repository: ChartRepository
 ) {

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+/** Loads latest exchange rates and emits loading/success/error states for the UI. */
 class GetExchangeRatesUseCase @Inject constructor(
     private val repository: CurrencyRepository
 ) {

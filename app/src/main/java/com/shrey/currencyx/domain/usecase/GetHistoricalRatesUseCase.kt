@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
+/** Loads historical rates for a currency pair and chart period. */
 class GetHistoricalRatesUseCase @Inject constructor(
     private val repository: ChartRepository
 ) {

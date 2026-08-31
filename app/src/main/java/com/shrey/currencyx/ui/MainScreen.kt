@@ -34,6 +34,7 @@ import com.shrey.currencyx.ui.converter.ConverterScreen
 import com.shrey.currencyx.ui.theme.Emerald500
 import kotlinx.serialization.Serializable
 
+/** Top-level Navigation 3 routes for the tabbed app shell. */
 @Serializable
 private sealed interface CurrencyRoute : NavKey {
     @Serializable
@@ -43,6 +44,7 @@ private sealed interface CurrencyRoute : NavKey {
     data object Charts : CurrencyRoute
 }
 
+/** Main app shell with the title bar, tab controls, and Navigation 3 content host. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {

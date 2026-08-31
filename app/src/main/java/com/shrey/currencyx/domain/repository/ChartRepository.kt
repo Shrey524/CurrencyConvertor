@@ -5,6 +5,7 @@ import com.shrey.currencyx.domain.model.ChartPeriod
 import com.shrey.currencyx.domain.model.ChartStats
 import com.shrey.currencyx.util.Resource
 
+/** Contract for historical exchange-rate chart data and derived chart statistics. */
 interface ChartRepository {
     suspend fun getHistoricalRates(
         from: String,
